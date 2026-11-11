@@ -37,4 +37,6 @@ None identified in the current inventory; this is not a compatibility guarantee.
 
 Both hook sites and byte guards match 0.0.12. The SDK monster-death listener and breadcrumb service can still operate when the native capture checks fail. Native item snapshots require the Core `ReadWideUnitStat` export and validated data layouts.
 
+The 0.0.13 standalone test loaded only Drop Logger in an unmodded offline game. It recorded two container openings, three container drops, three monster deaths, and two confirmed monster drops. All five item records included `item_area_id`, all scan windows completed, and zero records were lost.
+
 The combined test with Random Treasure Drop 0.1.43 verified the two separate hook entries and attribution of stock monster drops. Bonus item generation uses a separate path and can produce uncertain ground-item observations. Validation covers offline play on the audited game and loader builds.
