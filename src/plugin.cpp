@@ -28,7 +28,7 @@ namespace {
 constexpr D2RL::PluginInfo Info{
     .infoSize = D2RL::PluginInfoSize, .abiVersion = D2RL_PLUGIN_ABI_VERSION,
     .id = DropLogger::PluginId, .name = "Drop Logger",
-    .version = "0.0.13", .author = "MadMike",
+    .version = "1.0.0", .author = "MadMike",
     .description = "Read-only observation of container openings, monster deaths, and ground items.",
     .flags = D2RL::PluginFlags::Server | D2RL::PluginFlags::NativeHooks,
 };

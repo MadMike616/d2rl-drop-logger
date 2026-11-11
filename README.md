@@ -1,6 +1,6 @@
 # Drop Logger
 
-D2RLoader plugin by MadMike, version 0.0.13.
+D2RLoader plugin by MadMike, version 1.0.0.
 
 Records container openings, monster deaths, and observed ground items during offline play. Use the logs to reproduce loot tests, compare runs, or correlate another plugin's diagnostic messages with in-game events.
 

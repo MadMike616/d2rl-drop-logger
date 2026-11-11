@@ -6,9 +6,9 @@
 |---|---|
 | Plugin name | Drop Logger |
 | Plugin ID | container-drop-logger |
-| Release version | 0.0.13 |
+| Release version | 1.0.0 |
 | Inventory updated | 2026-11-11 |
-| Source revision | v0.0.13 release source |
+| Source revision | v1.0.0 release source |
 | D2R build(s) audited | 3.4.95032 with D2RLoader 1.3.1-beta |
 | D2RLoader SDK / Plugin ABI | PluginSDK 0.4.0 / Plugin ABI 4 |
 | Audit status | Complete |
@@ -35,7 +35,7 @@ None identified in the current inventory; this is not a compatibility guarantee.
 
 ## Audit notes
 
-Both hook sites and byte guards match 0.0.12. The SDK monster-death listener and breadcrumb service can still operate when the native capture checks fail. Native item snapshots require the Core `ReadWideUnitStat` export and validated data layouts.
+Both hook sites and byte guards match 0.0.13. The SDK monster-death listener and breadcrumb service can still operate when the native capture checks fail. Native item snapshots require the Core `ReadWideUnitStat` export and validated data layouts.
 
 The 0.0.13 standalone test loaded only Drop Logger in an unmodded offline game. It recorded two container openings, three container drops, three monster deaths, and two confirmed monster drops. All five item records included `item_area_id`, all scan windows completed, and zero records were lost.
 

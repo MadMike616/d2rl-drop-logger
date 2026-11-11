@@ -5,8 +5,8 @@
 D2RL_PLUGIN_MANIFEST_RESOURCE_ID RCDATA { D2RL_PLUGIN_RESOURCE_DWORD(D2RL_PLUGIN_ABI_VERSION) }
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,13,0
- PRODUCTVERSION 0,0,13,0
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
  FILEFLAGS 0
  FILEOS VOS_NT_WINDOWS32
@@ -18,9 +18,9 @@ BEGIN
   BEGIN
    VALUE "CompanyName", "MadMike\0"
    VALUE "FileDescription", "Drop Logger\0"
-   VALUE "FileVersion", "0.0.13\0"
+   VALUE "FileVersion", "1.0.0\0"
    VALUE "ProductName", "Drop Logger\0"
-   VALUE "ProductVersion", "0.0.13\0"
+   VALUE "ProductVersion", "1.0.0\0"
    VALUE "OriginalFilename", "d2rl-container-drop-logger.dll\0"
    VALUE "LegalCopyright", "Copyright (c) 2026 MadMike\0"
   END
