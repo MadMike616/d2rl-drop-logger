@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.29)
-project(ContainerDropLogger VERSION 1.0.0 LANGUAGES CXX RC)
+project(ContainerDropLogger VERSION 1.0.1 LANGUAGES CXX RC)
 set(D2RL_SDK_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../PluginSDK/SDK-0.4.0" CACHE PATH "Official PluginSDK 0.4.0 (03a5af9e0feb3f95f95e148e330e01f6635950df)")
 add_library(container_drop_logger SHARED src/plugin.cpp src/plugin.rc)
 target_include_directories(container_drop_logger PRIVATE "${D2RL_SDK_ROOT}/include" src include)

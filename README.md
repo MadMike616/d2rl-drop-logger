@@ -1,12 +1,12 @@
 # Drop Logger
 
-D2RLoader plugin by MadMike, version 1.0.0.
+D2RLoader plugin by MadMike. This branch contains the 1.0.1 source.
 
 Records container openings, monster deaths, and observed ground items during offline play. Use the logs to reproduce loot tests, compare runs, or correlate another plugin's diagnostic messages with in-game events.
 
 ## Install
 
-Copy `d2rl-container-drop-logger.dll` to `d2rloader/plugins` under your mod or the game directory while D2RLoader is closed. Start D2RLoader and join an offline game. No TOML configuration is required.
+Get `d2rl-container-drop-logger.dll` from [GitHub Releases](https://github.com/MadMike616/d2rl-drop-logger/releases) or build it from source. Copy it to `d2rloader/plugins` under your mod or the game directory while D2RLoader is closed. Start D2RLoader and join an offline game. No TOML configuration is required.
 
 Tested with D2RLoader 1.3.1-beta and Diablo II: Resurrected 3.4.95032 on Windows x64. The DLL uses Plugin ABI 4. Each native capture feature checks the code and data layout it needs at startup.
 
@@ -41,13 +41,13 @@ Regular and super chests can share an object class. The logger reads the flag on
 
 ## Observation limits
 
-The logger forwards every original operation once with its original arguments. It never supplies a seed, calls a random-number generator, or edits drops. The object-dispatch and item-creation hooks and the SDK monster-death listener observe the authoritative game thread. File writes run on a separate worker.
+The logger forwards every original operation once with its original arguments. It never supplies a seed, calls a random-number generator, or edits drops. The object-dispatch and Treasure Class drop-helper hooks and the SDK monster-death listener observe the authoritative game thread. File writes run on a separate worker.
 
 Container observation requires the original native code and structure witnesses to match at load. Container modes and identities are checked again at runtime. Snapshot limits, failed reads, queue overflow and uncertain source attribution can affect a capture. Very short-lived drops collected before a snapshot can be missed. Keep the same logger enabled in both comparison conditions because observation itself adds execution time.
 
 The monster-death listener runs after normal loot handling. The logger periodically remembers ground items near the player so it can filter items it has already seen. In an unobserved area, an item that was already there can still appear as a candidate. Close deaths can share candidates, and player-dropped items can appear in the same window. If container checks fail, the SDK death listener and breadcrumb service can still run. If the native ground or position checks fail, death identities remain available through the listener and candidate scanning is disabled.
 
-Confirmed monster drops use a separate item-creation site from Random Treasure Drop's Treasure Class hook. Drop Logger can capture stock Treasure Class drops independently of that plugin. Random Treasure Drop's bonus items use a separate creation and placement path and can appear as uncertain ground items. Capture falls back to the SDK death listener and ground scans when the exact-source checks fail.
+In 1.0.1, confirmed monster drops use the native Treasure Class drop helper. This preserves the Create Item entry checked by Grail On!. An offline test confirmed monster drops with Grail On! 1.2.2 and Random Treasure Drop 0.1.43 loaded. Random Treasure Drop's bonus items use a separate creation and placement path and can appear as uncertain ground items. Capture falls back to the SDK death listener and ground scans when the exact-source checks fail.
 
 ## Breadcrumbs for plugin developers
 

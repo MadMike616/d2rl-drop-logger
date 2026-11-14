@@ -28,7 +28,7 @@ namespace {
 constexpr D2RL::PluginInfo Info{
     .infoSize = D2RL::PluginInfoSize, .abiVersion = D2RL_PLUGIN_ABI_VERSION,
     .id = DropLogger::PluginId, .name = "Drop Logger",
-    .version = "1.0.0", .author = "MadMike",
+    .version = "1.0.1", .author = "MadMike",
     .description = "Read-only observation of container openings, monster deaths, and ground items.",
     .flags = D2RL::PluginFlags::Server | D2RL::PluginFlags::NativeHooks,
 };
@@ -38,7 +38,7 @@ const D2RL::LifecycleService* Lifecycle{};
 const D2RL::LocalizationService* Localization{};
 const D2RL::DiagnosticsService* Diagnostics{};
 using OperateFn = std::int32_t(__fastcall*)(void*, void*, std::uint32_t, std::uint32_t, bool);
-using CreateItemFn = void*(__fastcall*)(void*, void*, std::int32_t);
+using TreasureDropFn = void*(__fastcall*)(void*, void*, std::int32_t, std::int32_t, std::int32_t, std::int32_t);
 using UnitFn = void*(__fastcall*)(void*);
 using LookupFn = void*(__fastcall*)(void*, std::uint32_t, std::uint32_t);
 using NeighboursFn = void(__fastcall*)(void*, void***, std::uint32_t*);
@@ -48,7 +48,7 @@ using StatFn = std::int32_t(__cdecl*)(void*, std::int32_t, std::int32_t) noexcep
 using GetLocalDataContextFn = std::int32_t(__fastcall*)();
 using GetLocalPlayerFn = void*(__fastcall*)(std::int32_t);
 OperateFn Original{};
-CreateItemFn OriginalCreateItem{};
+TreasureDropFn OriginalTreasureDrop{};
 UnitFn Room{}, First{}, Next{}, GameFromUnit{}, ObjectRecord{};
 LookupFn Lookup{};
 NeighboursFn Neighbours{};
@@ -534,14 +534,10 @@ void SyncEpoch() {
     LastBaseline=0; StateEpoch=now;
 }
 
-bool ReadTreasureSource(void* game,void* descriptor,ExactDrop& drop) noexcept {
+bool ReadTreasureSource(void* game,void* source,ExactDrop& drop) noexcept {
     __try {
-        void* source{};
-        void* sourceGame{};
-        std::uint32_t spawnMode{},type{};
-        if(!game || game!=ActiveGame() || !Read(descriptor,0,source) || !Read(descriptor,0x10,sourceGame)
-            || sourceGame!=game || !Read(descriptor,0x24,spawnMode) || spawnMode!=3
-            || !Read(source,0,type) || type!=1 || !Read(source,4,drop.monsterClass)
+        std::uint32_t type{};
+        if(!game || game!=ActiveGame() || !Read(source,0,type) || type!=1 || !Read(source,4,drop.monsterClass)
             || !Read(source,8,drop.monster) || drop.monster==D2RL::Lifecycle::InvalidUnitId
             || GameFromUnit(source)!=game || Lookup(game,type,drop.monster)!=source) return false;
         drop.level=LevelId(source);
@@ -592,14 +588,15 @@ void FlushExactDrops(std::uint32_t monster=D2RL::Lifecycle::InvalidUnitId,std::u
     });
 }
 
-void* __fastcall CreateItemHook(void* game,void* descriptor,std::int32_t useSeed) {
-    if(!OriginalCreateItem) return nullptr;
+void* __fastcall TreasureDropHook(void* game,void* source,std::int32_t itemClassId,
+        std::int32_t arg4,std::int32_t arg5,std::int32_t arg6) {
+    if(!OriginalTreasureDrop) return nullptr;
     ExactDrop drop;
     const auto epoch=Epoch.load();
     const bool observed=Active.load() && InGame.load()
-        && reinterpret_cast<std::uintptr_t>(_ReturnAddress())==Context->exeBase+NativeWitnesses::TreasureCreateReturnRva
-        && ReadTreasureSource(game,descriptor,drop);
-    auto* item=OriginalCreateItem(game,descriptor,useSeed);
+        && reinterpret_cast<std::uintptr_t>(_ReturnAddress())==Context->exeBase+NativeWitnesses::TreasureHelperReturnRva
+        && ReadTreasureSource(game,source,drop);
+    auto* item=OriginalTreasureDrop(game,source,itemClassId,arg4,arg5,arg6);
     if(!observed || !InGame.load() || Epoch.load()!=epoch || !ReadCreatedGroundItem(game,item,drop.item)) return item;
     try {
         SyncEpoch();
@@ -1171,14 +1168,14 @@ D2RL_PLUGIN_EXPORT bool __cdecl D2RLoaderLoadPlugin(const D2RL::PluginContext* c
         }
         bool exactDropsEnabled=false;
         if(treasureMatches) {
-            const bool installed=Context->InstallInlineHook(CreateItemCoreRva,CreateItemCoreBytes.data(),
-                CreateItemCorePrologueSize,CreateItemHook,&OriginalCreateItem);
-            if(installed && !OriginalCreateItem) {
-                Context->LogError("Drop Logger item hook installation returned no original function.");
+            const bool installed=Context->InstallInlineHook(TreasureHelperRva,TreasureHelperEntryBytes.data(),
+                TreasureHelperPrologueSize,TreasureDropHook,&OriginalTreasureDrop);
+            if(installed && !OriginalTreasureDrop) {
+                Context->LogError("Drop Logger Treasure Class hook installation returned no original function.");
                 Cleanup(); return false;
             }
             exactDropsEnabled=installed;
-            if(!installed) ReportNativeIssue(startupIssues,"monster_drops","install_rejected",CreateItemCoreRva,CreateItemCoreBytes);
+            if(!installed) ReportNativeIssue(startupIssues,"monster_drops","install_rejected",TreasureHelperRva,TreasureHelperEntryBytes);
         }
         const bool breadcrumbsEnabled=PublishBreadcrumbs();
         const auto enabled=[](bool value) {return value?"enabled":"unavailable";};
